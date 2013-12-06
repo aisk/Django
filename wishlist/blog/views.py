@@ -1,3 +1,7 @@
+# coding: utf-8
+
+from PIL import Image
+
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
@@ -9,7 +13,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage, PageNotAnIn
 
 from blog.models import Blog, UserProfile
 
-
+from blog import utils
 from .forms import BlogForm, UserForm
 
 @login_required
@@ -24,7 +28,9 @@ def add_entry(request):
             author = request.user.get_profile()
             wish = Blog(author=author)
             blog=BlogForm(request.POST, request.FILES, instance=wish)
-            blog.save()
+            blog_id = blog.save().id
+            blog = Blog.objects.get(id=blog_id)
+            utils.change_image_size(blog.image)
             return HttpResponseRedirect(reverse('home'))
     else:
         form = BlogForm()
